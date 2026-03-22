@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroMercados MAG — Mapa y búsqueda (El Salvador)</title>
+    <meta name="description" content="Mapa interactivo con ~50 puntos de referencia AgroMercados del MAG, El Salvador.">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-dark: #1b5e20;
+            --accent: #4caf50;
+            --bg: #f1f8e9;
+            --card: #fff;
+            --text: #333;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            padding: 2.5rem 1.25rem 3rem;
+            text-align: center;
+        }
+        .hero h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; margin-bottom: 0.5rem; }
+        .hero p { opacity: 0.95; max-width: 640px; margin: 0 auto 1rem; font-size: 0.95rem; }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+        .panel {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            margin-bottom: 1.25rem;
+        }
+        .panel h2 { color: var(--primary); font-size: 1.15rem; margin-bottom: 1rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; }
+        input[type="search"] {
+            width: 100%;
+            max-width: 520px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+        .row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 0.75rem; }
+        button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 0.65rem 1.25rem;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        button:hover { background: var(--primary-dark); }
+        button.secondary { background: #fff; color: var(--primary); border: 2px solid var(--primary); }
+        button.secondary:hover { background: var(--bg); }
+        #map {
+            width: 100%;
+            height: min(58vh, 520px);
+            border-radius: 16px;
+            margin-top: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .stats { font-size: 0.9rem; color: #555; margin-top: 0.5rem; }
+        .list {
+            max-height: 280px;
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid #e8e8e8;
+            border-radius: 12px;
+        }
+        .list-item {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-size: 0.88rem;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .list-item:hover { background: var(--bg); }
+        .list-item strong { color: var(--primary); display: block; margin-bottom: 0.25rem; }
+        .coords { font-size: 0.8rem; color: #666; margin-top: 0.75rem; text-align: center; }
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            font-size: 0.85rem;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+        footer a { color: var(--primary); font-weight: 600; }
+        .note { font-size: 0.8rem; color: #666; margin-top: 1rem; max-width: 720px; }
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <h1>AgroMercados del MAG — geolocalización</h1>
+        <p>Demo pública en una sola página: mapa de El Salvador, ~50 puntos de referencia y búsqueda por nombre, municipio o departamento.</p>
+        <span class="badge">Horario habitual (referencia): 6:00 a. m. — 1:00 p. m.</span>
+    </header>
+
+    <main class="wrap">
+        <section class="panel">
+            <h2>Buscar en el mapa</h2>
+            <label for="q">Buscar</label>
+            <input type="search" id="q" placeholder="Ej.: Santa Ana, Ilopango, La Unión, parque…" autocomplete="off">
+            <div class="row">
+                <button type="button" id="btnBuscar">Filtrar puntos</button>
+                <button type="button" class="secondary" id="btnTodos">Ver los 50 puntos</button>
+                <button type="button" class="secondary" id="btnAqui">Mi ubicación</button>
+            </div>
+            <p class="stats" id="stats"></p>
+        </section>
+
+        <section class="panel">
+            <h2>Mapa</h2>
+            <div id="map"></div>
+            <p class="coords" id="coords">Haz clic en el mapa o en un resultado de la lista.</p>
+        </section>
+
+        <section class="panel">
+            <h2>Resultados</h2>
+            <div class="list" id="list"></div>
+            <p class="note">Si no hay coincidencias en la lista local, se intenta ubicar una dirección en El Salvador con OpenStreetMap (Nominatim). Coordenadas aproximadas; datos de referencia.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Código y datos del proyecto en <a href="https://github.com/fernandonotnull555-dev/Agro_geolocalizacion" target="_blank" rel="noopener">GitHub</a>.</p>
+        <p>Esta página es <strong>estática</strong> (sin PHP). El sistema completo con login y base de datos requiere hosting con PHP + MySQL.</p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+(function () {
+    const DATA_URL = 'data/agromercados.json';
+
+    let map, markersLayer, allPuntos = [];
+    const elStats = document.getElementById('stats');
+    const elList = document.getElementById('list');
+    const elCoords = document.getElementById('coords');
+    const elQ = document.getElementById('q');
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function initMap() {
+        map = L.map('map').setView([13.794185, -88.896530], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+        markersLayer = L.layerGroup().addTo(map);
+        map.on('click', function (e) {
+            elCoords.textContent = 'Lat: ' + e.latlng.lat.toFixed(6) + ' · Lng: ' + e.latlng.lng.toFixed(6);
+        });
+    }
+
+    function drawMarkers(puntos) {
+        markersLayer.clearLayers();
+        puntos.forEach(function (p) {
+            const m = L.marker([p.lat, p.lng]).addTo(markersLayer);
+            m.bindPopup('<strong>' + escapeHtml(p.nombre) + '</strong><br>' + escapeHtml(p.direccion));
+        });
+        if (puntos.length === 1) {
+            map.setView([puntos[0].lat, puntos[0].lng], 14);
+        } else if (puntos.length > 1) {
+            const b = L.latLngBounds(puntos.map(function (p) { return [p.lat, p.lng]; }));
+            map.fitBounds(b, { padding: [36, 36], maxZoom: 9 });
+        }
+        elStats.textContent = 'Mostrando ' + puntos.length + ' punto(s).';
+    }
+
+    function renderList(puntos) {
+        elList.innerHTML = '';
+        if (puntos.length === 0) {
+            elList.innerHTML = '<div class="list-item">Sin coincidencias. Prueba otro término o la búsqueda en mapa (Nominatim).</div>';
+            return;
+        }
+        puntos.forEach(function (p) {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = '<strong>' + escapeHtml(p.nombre) + '</strong>' + escapeHtml(p.direccion);
+            div.addEventListener('click', function () {
+                map.setView([p.lat, p.lng], 15);
+                elCoords.textContent = 'Lat: ' + p.lat + ' · Lng: ' + p.lng;
+            });
+            elList.appendChild(div);
+        });
+    }
+
+    function filterLocal(q) {
+        q = (q || '').trim().toLowerCase();
+        if (!q) return allPuntos.slice();
+        return allPuntos.filter(function (p) {
+            return (p.nombre + ' ' + p.direccion).toLowerCase().indexOf(q) !== -1;
+        });
+    }
+
+    function buscarNominatim(q) {
+        if (!q.trim()) return;
+        const url = 'https://nominatim.openstreetmap.org/search?format=json&countrycodes=sv&limit=5&q=' +
+            encodeURIComponent(q + ', El Salvador');
+        fetch(url, { headers: { 'Accept-Language': 'es', 'User-Agent': 'AgroGeo-Static/1.0' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data || !data.length) {
+                    elCoords.textContent = 'No se encontró la ubicación en El Salvador.';
+                    return;
+                }
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 15);
+                L.marker([lat, lon]).addTo(markersLayer).bindPopup(escapeHtml(q)).openPopup();
+                elCoords.textContent = 'Lat: ' + lat.toFixed(6) + ' · Lng: ' + lon.toFixed(6);
+            })
+            .catch(function () {
+                elCoords.textContent = 'Error al consultar el mapa externo.';
+            });
+    }
+
+    function aplicarBusqueda() {
+        const q = elQ.value;
+        const filtrados = filterLocal(q);
+        drawMarkers(filtrados);
+        renderList(filtrados);
+        if (filtrados.length === 0 && q.trim()) {
+            buscarNominatim(q);
+        }
+    }
+
+    document.getElementById('btnBuscar').addEventListener('click', aplicarBusqueda);
+    document.getElementById('btnTodos').addEventListener('click', function () {
+        elQ.value = '';
+        drawMarkers(allPuntos);
+        renderList(allPuntos);
+    });
+    document.getElementById('btnAqui').addEventListener('click', function () {
+        if (!navigator.geolocation) {
+            alert('Tu navegador no permite geolocalización.');
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(function (pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            map.setView([lat, lng], 15);
+            elCoords.textContent = 'Lat: ' + lat.toFixed(6) + ' · Lng: ' + lng.toFixed(6);
+        }, function () {
+            alert('No se pudo obtener tu ubicación.');
+        });
+    });
+    elQ.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') aplicarBusqueda();
+    });
+
+    fetch(DATA_URL)
+        .then(function (r) {
+            if (!r.ok) throw new Error('No se pudo cargar data/agromercados.json');
+            return r.json();
+        })
+        .then(function (data) {
+            allPuntos = data;
+            initMap();
+            drawMarkers(allPuntos);
+            renderList(allPuntos);
+        })
+        .catch(function () {
+            elStats.textContent = 'Error al cargar datos. ¿Abriste el archivo como file://? Usa GitHub Pages o un servidor local.';
+            initMap();
+        });
+})();
+    </script>
+</body>
+</html>
