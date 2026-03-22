@@ -14,9 +14,44 @@ Los scripts SQL están en la carpeta `database/`:
 
 **Importante:** GitHub almacena el *script* SQL, no un servidor MySQL. Para “que funcione” debes importar ese SQL en MySQL local, hosting o Docker (ver abajo).
 
-## Configuración de conexión
+## Ver la app en la nube (sin usar tu PC como servidor)
 
-Por defecto se usa `localhost`, usuario `root`, sin contraseña. Para Docker u otro servidor, copia `docker/config.local.php` a la raíz del proyecto como `config.local.php` y ajusta host, usuario y contraseña (el archivo `config.local.php` está en `.gitignore` para no subir secretos).
+Necesitas un **hosting con PHP y MySQL** (gratis o de pago). GitHub Pages **no sirve** para ejecutar PHP.
+
+### Opción recomendada: hosting gratuito (PHP + MySQL)
+
+Servicios típicos: [InfinityFree](https://www.infinityfree.net/), [000webhost](https://www.000webhost.com/) u otro con **PHP 7.4+**, **MySQL** y **FTP** o despliegue desde Git.
+
+Pasos generales:
+
+1. **Crea una cuenta** y un sitio web en el panel del hosting (te darán una URL pública tipo `tusitio.epizy.com`).
+2. **Crea una base de datos MySQL** en el panel y anota: **servidor/host** (a veces no es `localhost`), **usuario**, **contraseña**, **nombre de la base**.
+3. **Sube los archivos del proyecto** (FTP, administrador de archivos o Git si el plan lo permite) a la carpeta pública (`htdocs`, `public_html`, etc.).
+4. Entra a **phpMyAdmin** del hosting, selecciona tu base e **importa** `database/install_completo.sql` (o solo el contenido de `seed` si la tabla ya la creaste tú).
+5. Configura la conexión en el servidor, **una de estas dos formas**:
+   - **Archivo `config.local.php`** en la raíz del sitio (junto a `index.php`), con los datos del panel:
+
+```php
+<?php
+$DB_HOST = 'el_host_que_te_dio_el_panel';
+$DB_USER = 'tu_usuario_mysql';
+$DB_PASS = 'tu_contraseña_mysql';
+$DB_NAME = 'nombre_de_tu_base';
+```
+
+   - O variables de entorno si el hosting las permite: `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME` (tienen prioridad sobre `config.local.php` para esos valores).
+
+6. Abre en el navegador tu URL + `index.php` o `login_agro.html`.
+
+**Nota:** No subas `config.local.php` a GitHub si contiene contraseñas; en el servidor sí debe existir para que la app se conecte a la base.
+
+### Opción avanzada: PaaS con Docker (Railway, Render, etc.)
+
+Puedes desplegar un contenedor PHP y un MySQL gestionado; suele requerir tarjeta o plan de pago. En ese caso define las variables `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME` en el panel del servicio.
+
+## Configuración de conexión (local)
+
+Por defecto: `localhost`, usuario `root`, sin contraseña. En local, puedes copiar `docker/config.local.php` a la raíz como `config.local.php` (ese archivo en la raíz está en `.gitignore`).
 
 ## Probar con Docker (recomendado)
 
