@@ -1,0 +1,24 @@
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: agro_root_secret
+      MYSQL_DATABASE: agro_localizacion
+    ports:
+      - "3306:3306"
+    volumes:
+      - agro_mysql_data:/var/lib/mysql
+      - ./database/install_completo.sql:/docker-entrypoint-initdb.d/01_install.sql:ro
+
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/config.local.php:/var/www/html/config.local.php:ro
+    depends_on:
+      - db
+
+volumes:
+  agro_mysql_data:
