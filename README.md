@@ -4,16 +4,9 @@ Sistema web (PHP + MySQL) para registrar y localizar agromercados en mapa (Leafl
 
 - Demo (GitHub Pages)
 
-En la carpeta docs/ hay una versión solo HTML (sin PHP) para ver el mapa y los ~50 puntos MAG desde el mismo repositorio, publicada con GitHub Pages.
-
-1. En GitHub: Settings → Pages.
-2. Build and deployment: Source **Deploy from a branch.
-3. Branch main, folder /docs, Save.
-4. En unos minutos la demo estará en:  
-   `https://fernandonotnull555-dev.github.io/Agro_geolocalizacion/` 
 
 
-mapa, búsqueda y lista en un solo sitio. El backend PHP + MySQL sigue siendo el proyecto completo para login, reportes, etc.
+mapa, búsqueda y lista en un solo sitio. El backend PHP + MySQL sigue siendo el proyecto completo para login, reportes, etc que se pueden encontrar.
 
 - Base de datos en el repositorio
 
