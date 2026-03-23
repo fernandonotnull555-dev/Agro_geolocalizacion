@@ -1,5 +1,5 @@
 -- Instalación completa: esquema + 50 AgroMercados MAG (referencia oficial).
--- Importar en MySQL (phpMyAdmin, CLI o Docker init).
+
 
 CREATE DATABASE IF NOT EXISTS agro_localizacion CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE agro_localizacion;
